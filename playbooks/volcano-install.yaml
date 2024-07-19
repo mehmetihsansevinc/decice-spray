@@ -1,0 +1,7 @@
+---
+- name: Deploy Volcano on Kubernetes control plane nodes
+  hosts: kube_control_plane
+  become: yes
+  tasks:
+    - name: Apply Volcano development YAML
+      command: kubectl apply -f https://raw.githubusercontent.com/volcano-sh/volcano/v1.9.0/installer/volcano-development.yaml

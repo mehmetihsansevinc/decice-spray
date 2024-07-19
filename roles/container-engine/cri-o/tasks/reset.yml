@@ -45,7 +45,7 @@
     - reset_crio
 
 - name: CRI-O | Run yum-clean-metadata
-  command: yum clean metadata
+  command: dnf clean metadata
   when:
     - ansible_os_family == "RedHat"
   tags:
