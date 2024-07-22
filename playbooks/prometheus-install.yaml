@@ -1,0 +1,35 @@
+---
+- name: Setup Prometheus Monitoring
+  hosts: kube_control_plane
+  become: yes
+  tasks:
+    - name: Change admin.conf permission
+      shell: chmod +r /etc/kubernetes/admin.conf
+
+    - name: Export KUBECONFIG environment variable
+      shell: export KUBECONFIG=/etc/kubernetes/admin.conf
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+
+    - name: Create monitoring namespace
+      command: kubectl create ns monitoring
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+
+    - name: Add Prometheus Helm repo
+      command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      become_user: msevinc
+
+    - name: Update Helm repo
+      command: helm repo update prometheus-community
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      become_user: msevinc
+
+    - name: Install Prometheus using Helm
+      command: helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      become_user: msevinc

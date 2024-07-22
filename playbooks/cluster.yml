@@ -95,3 +95,6 @@
 
 - name: Install Volcano
   import_playbook: volcano-install.yaml
+
+- name: Install Prometheus
+  import_playbook: prometheus-install.yaml
