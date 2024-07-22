@@ -1,0 +1,23 @@
+---
+- name: Deploy Keycloak in Kubernetes
+  hosts: kube_control_plane
+  become: yes
+  tasks:
+    - name: Create Keycloak namespace
+      command: kubectl create ns keycloak
+      register: create_namespace_output
+      ignore_errors: yes
+
+    - name: Apply Keycloak deployment configuration
+      command: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/keycloak.yaml -n keycloak
+      register: apply_deployment_output
+      ignore_errors: yes
+
+    - name: Display namespace creation output
+      debug:
+        msg: "{{ create_namespace_output.stdout }}"
+
+    - name: Display deployment application output
+      debug:
+        msg: "{{ apply_deployment_output.stdout }}"
+
