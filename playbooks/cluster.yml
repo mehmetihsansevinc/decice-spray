@@ -98,3 +98,6 @@
 
 - name: Install Prometheus
   import_playbook: prometheus-install.yaml
+
+- name: Install Keycloak
+  import_playbook: keycloak-install.yaml
