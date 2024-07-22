@@ -8,8 +8,28 @@
       register: create_namespace_output
       ignore_errors: yes
 
-    - name: Apply Keycloak deployment configuration
-      command: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/keycloak.yaml -n keycloak
+    - name: Create Keycloak namespace
+      command: kubectl create ns freeipa
+      register: create_namespace_output
+      ignore_errors: yes
+    
+    - name: Create Certificates
+      command: openssl req -subj '/CN=auth.kc.com/O=Keycloak./C=EU' -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem
+    
+    - name: Create Secret from the Keys
+      command: kubectl create secret tls -n keycloak keycloak-tls-secret --cert certificate.pem --key key.pem
+
+    - name: Install CRDs
+      command: curl -O https://raw.githubusercontent.com/keycloak/keycloak-operator/master/deploy/crds/keycloak.org_keycloaks_crd.yaml
+    
+    - name: Apply CRDs
+      command: kubectl apply -f keycloak.org_keycloaks_crd.yaml
+    
+    - name: Deploy DB
+      command: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/db.yaml -n keycloak
+    
+    - name: Deploy Keycloack
+      command: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/keycloak.yaml
       register: apply_deployment_output
       ignore_errors: yes
 
@@ -20,4 +40,3 @@
     - name: Display deployment application output
       debug:
         msg: "{{ apply_deployment_output.stdout }}"
-
