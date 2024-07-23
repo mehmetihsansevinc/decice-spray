@@ -17,7 +17,7 @@
       command: openssl req -subj '/CN=auth.kc.com/O=Keycloak./C=EU' -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem
     
     - name: Create Secret from the Keys
-      command: kubectl create secret tls -n keycloak keycloak-tls-secret --cert certificate.pem --key key.pem
+      command: kubectl create secret tls -n freeipa keycloak-tls-secret --cert certificate.pem --key key.pem
 
     - name: Install CRDs
       command: curl -O https://raw.githubusercontent.com/keycloak/keycloak-operator/master/deploy/crds/keycloak.org_keycloaks_crd.yaml
