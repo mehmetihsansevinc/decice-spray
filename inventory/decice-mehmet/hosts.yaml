@@ -1,0 +1,27 @@
+all:
+  hosts:
+    cn03:
+      ansible_host: 192.168.23.13
+      ip: 192.168.23.13
+      access_ip: 192.168.23.13
+    cn08:
+      ansible_host: 192.168.23.18
+      ip: 192.168.23.18
+      access_ip: 192.168.23.18
+  children:
+    kube_control_plane:
+      hosts:
+        cn03:
+    kube_node:
+      hosts:
+        cn03:
+        cn08:
+    etcd:
+      hosts:
+        cn03:
+    k8s_cluster:
+      children:
+        kube_control_plane:
+        kube_node:
+    calico_rr:
+      hosts: {}
