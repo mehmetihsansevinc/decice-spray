@@ -1,0 +1,54 @@
+---
+- name: Add DECICE RBAC
+  hosts: kube_control_plane
+  become: yes
+  tasks:
+    - name: Create namespace decice
+      shell: kubectl create ns decice
+      register: result
+      changed_when: "'created' in result.stdout"
+    - name: Display message after creating namespace
+      debug:
+        msg: "Namespace 'decice' created successfully."
+      when: "'created' in result.stdout"
+
+    - name: Apply RBAC certificate
+      shell: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/rbac-certificate.yaml
+      register: result
+    - name: Display message after applying RBAC certificate
+      debug:
+        msg: "RBAC certificate applied successfully."
+      when: result.rc == 0
+
+    - name: Apply RBAC cluster role
+      shell: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/rbac-cluster-role.yaml
+      register: result
+    - name: Display message after applying RBAC cluster role
+      debug:
+        msg: "RBAC cluster role applied successfully."
+      when: result.rc == 0
+
+    - name: Apply RBAC cluster role binding
+      shell: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/rbac-cluster-role-binding.yaml
+      register: result
+    - name: Display message after applying RBAC cluster role binding
+      debug:
+        msg: "RBAC cluster role binding applied successfully."
+      when: result.rc == 0
+
+    - name: Apply RBAC
+      shell: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/rbac.yaml
+      register: result
+    - name: Display message after applying RBAC
+      debug:
+        msg: "RBAC applied successfully."
+      when: result.rc == 0
+
+    - name: Apply role binding
+      shell: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/role-binding.yaml
+      register: result
+    - name: Display message after applying role binding
+      debug:
+        msg: "Role binding applied successfully."
+      when: result.rc == 0
+
