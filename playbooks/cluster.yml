@@ -101,3 +101,6 @@
 
 - name: Install Keycloak
   import_playbook: keycloak-install.yaml
+
+- name: Install RBAC
+  import_playbook: decice-rbac.yaml
