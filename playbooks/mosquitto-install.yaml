@@ -1,0 +1,7 @@
+---
+- name: Deploy Mosquitto on Kubernetes
+  hosts: kube_control_plane
+  become: yes
+  tasks:
+    - name: Apply mosquitto-install YAML
+      command: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/mosquitto-deployment.yaml
