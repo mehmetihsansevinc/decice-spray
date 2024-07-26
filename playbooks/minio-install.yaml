@@ -1,0 +1,7 @@
+---
+- name: Deploy Minio on Kubernetes control plane nodes
+  hosts: kube_control_plane
+  become: yes
+  tasks:
+    - name: Apply Minio-deployment YAML
+      command: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/minio-deployment.yaml

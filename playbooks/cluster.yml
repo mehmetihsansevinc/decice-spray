@@ -104,3 +104,6 @@
 
 - name: Install RBAC
   import_playbook: decice-rbac.yaml
+
+- name: Install Minio
+  import_playbook: minio-install.yaml
