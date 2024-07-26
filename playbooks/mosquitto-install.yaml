@@ -3,5 +3,21 @@
   hosts: kube_control_plane
   become: yes
   tasks:
+    - name: Label all worker nodes
+      shell: |
+        for i in $(kubectl get nodes --show-labels | grep -i none | awk '{print $1}'); do
+          kubectl label node $i node-role.kubernetes.io/worker=;
+        done
+      register: result
+
     - name: Apply mosquitto-install YAML
       command: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/mosquitto-deployment.yaml
+      register: result
+
+    - name: Print the result
+      debug:
+        var: result.stdout_lines
+
+    - name: Print the result
+      debug:
+        var: result.stdout_lines
