@@ -107,3 +107,6 @@
 
 - name: Install Minio
   import_playbook: minio-install.yaml
+
+- name: Install Mosquitto
+  import_playbook: mosquitto-install.yaml
