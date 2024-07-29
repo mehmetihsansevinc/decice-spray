@@ -3,5 +3,8 @@
   hosts: kube_control_plane
   become: yes
   tasks:
+    - name: Create HostPath
+      shell: mkdir /home/msevinc/minio/
+
     - name: Apply Minio-deployment YAML
       command: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/minio-deployment.yaml
