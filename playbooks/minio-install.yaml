@@ -4,7 +4,7 @@
   become: yes
   tasks:
     - name: Create HostPath
-      shell: mkdir /home/msevinc/minio/
+      shell: mkdir -p /home/msevinc/minio/
 
     - name: Apply Minio-deployment YAML
       command: kubectl apply -f https://raw.githubusercontent.com/mehmetihsansevinc/decice/main/minio-deployment.yaml

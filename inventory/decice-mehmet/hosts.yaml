@@ -1,24 +1,34 @@
 all:
   hosts:
-    cn03:
-      ansible_host: 192.168.23.13
-      ip: 192.168.23.13
-      access_ip: 192.168.23.13
+    cn06:
+      ansible_host: 192.168.23.16
+      ip: 192.168.23.16
+      access_ip: 192.168.23.16
     cn08:
       ansible_host: 192.168.23.18
       ip: 192.168.23.18
       access_ip: 192.168.23.18
+    cn05:
+      ansible_host: 192.168.23.15
+      ip: 192.168.23.15
+      access_ip: 192.168.23.15
+    cn07:
+      ansible_host: 192.168.23.17
+      ip: 192.168.23.17
+      access_ip: 192.168.23.17
   children:
     kube_control_plane:
       hosts:
-        cn03:
+        cn05:
     kube_node:
       hosts:
-        cn03:
+        cn05:
+        cn06:
+        cn07:
         cn08:
     etcd:
       hosts:
-        cn03:
+        cn05:
     k8s_cluster:
       children:
         kube_control_plane:

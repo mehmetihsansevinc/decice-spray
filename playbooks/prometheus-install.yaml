@@ -35,6 +35,6 @@
       become_user: msevinc
 
     - name: Switch Grafana to NodePort
-      command: kubectl patch svc prometheus-grafana -n monitoring -p '{"spec": {"type": "NodePort", "ports": [{"port": 80, "nodePort": 30494}]}}'
+      command: 'kubectl patch svc prometheus-grafana -n monitoring -p ''{"spec": {"type": "NodePort", "ports": [{"port": 80, "nodePort": 30494}]}}'''
       environment:
         KUBECONFIG: /etc/kubernetes/admin.conf
