@@ -110,3 +110,6 @@
 
 - name: Install Mosquitto
   import_playbook: mosquitto-install.yaml
+
+- name: Install Kubeedge Cloudcore
+  import_playbook: kubeedge-cloudcore-install.yaml

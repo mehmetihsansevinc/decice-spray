@@ -1,0 +1,64 @@
+- name: Setup Kubeedge Edgecore
+  hosts: 192.168.23.13
+  become: yes
+  tasks:
+  - name: Copy Edgecore to /usr/local/bin
+    shell: sudo cp /home/msevinc/kubeedge/kubeedge-v1.18.0-linux-arm64/edge/edgecore /usr/local/bin/edgecore
+
+  - name: Create /opt/cni/bin directory
+    shell: sudo mkdir -p /opt/cni/bin/
+
+  - name: Extract cni on all nodes and copy all to /opt/cni/bin"
+    shell: sudo tar zxvf /home/msevinc/cni-plugins-linux-arm64-v1.3.0.tgz -C /opt/cni/bin
+
+  - name: Edit check path of crio
+    shell: sudo sed -i 's|/usr/libexec/cni/|/opt/cni/bin|' /etc/crio/crio.conf
+
+  - name: Create /usr/libesec/bin path
+    shell: sudo mkdir -p /usr/libexec/bin/
+
+  - name: Copy binaries
+    shell: sudo cp /opt/cni/bin/* /usr/libexec/bin/
+
+  - name: Create the /home/msevinc/kubeedge/edgecore.yaml
+    shell: wget https://raw.githubusercontent.com/mehmetihsansevinc/decice/refs/heads/main/edgecore.yaml -P /home/msevinc/kubeedge/
+
+  - name: Export the token file as an environment variable
+    shell: export TOKEN=$(cat /home/msevinc/kubeedge/token)
+
+  - name: Import the token as a parameter in edgecore.yaml
+    shell: >
+      sed -i "s/token: \"\"/token: \"$(cat /home/msevinc/kubeedge/token)\"/" /home/msevinc/kubeedge/edgecore.yaml #magic___^_^___line #magic___^_^___line
+  - name: Create an edgecore.service file under /etc/systemd/system/edgecore.service
+    shell: |
+      sudo bash -c 'cat <<EOF > /etc/systemd/system/edgecore.service
+      [Unit]
+      Description=edgecore.service
+
+      [Service]
+      Type=simple
+      ExecStart=/usr/local/bin/edgecore --config /home/msevinc/kubeedge/edgecore.yaml
+      Environment="CHECK_EDGECORE_ENVIRONMENT=false"
+      Restart=always
+      RestartSec=10
+
+      [Install]
+      WantedBy=multi-user.target
+      EOF'
+
+  - name: Reload the systemd daemon
+    shell: sudo systemctl daemon-reload
+
+  - name: Pause for 45 seconds
+    pause:
+      seconds: 45
+
+  - name: Restart crio service
+    shell: sudo systemctl restart crio
+
+  - name: Pause for 45 seconds
+    pause:
+      seconds: 45
+
+  - name: Start edgecore service
+    shell: sudo service edgecore start

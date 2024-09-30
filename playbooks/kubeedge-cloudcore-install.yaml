@@ -1,0 +1,167 @@
+- name: Setup Kubeedge Cloudcore
+  hosts: kube_control_plane
+  become: yes
+  tasks:
+  - name: Change admin.conf permission
+    shell: chmod +r /etc/kubernetes/admin.conf
+
+  - name: Create kubeedge directory
+    shell: mkdir -p /home/msevinc/kubeedge
+
+  - name: Export KUBECONFIG environment variable
+    shell: export KUBECONFIG=/etc/kubernetes/admin.conf
+
+  - name: Download Kubeedge
+    shell: sudo wget https://github.com/kubeedge/kubeedge/releases/download/v1.18.0/keadm-v1.18.0-linux-arm64.tar.gz -P /home/msevinc/kubeedge/
+
+  - name: Extract Kubeedge
+    shell: sudo tar -zxvf /home/msevinc/kubeedge/keadm-v1.18.0-linux-arm64.tar.gz -C /home/msevinc/kubeedge/
+
+  - name: Copy Kubeedge Binaries to /usr/local/bin
+    shell: sudo cp /home/msevinc/kubeedge/keadm-v1.18.0-linux-arm64/keadm/keadm /usr/local/bin
+
+  - name: Copy Kubeedge Binaries to /usr/local/bin
+    shell: sudo cp /home/msevinc/kubeedge/keadm-v1.18.0-linux-arm64/keadm/keadm /usr/local/bin
+
+  - name: Change kubeconfig permisson
+    shell: sudo chmod +r /root/.kube/config
+
+  - name: Copy kubeconfig to home directory
+    shell: sudo cp /root/.kube/config /home/msevinc/.kube/config
+
+  - name: Change owner of kubeconfig
+    shell: sudo chown msevinc:msevinc /home/msevinc/.kube/config
+
+  - name: Change owner of kubeedge directory
+    shell: sudo chown msevinc:msevinc /home/msevinc/kubeedge
+
+  - name: Change owner of root kubeconfig
+    shell: sudo chown msevinc:msevinc /root/.kube/config
+
+  - name: Link the dnf to yum
+    shell: sudo ln -s /usr/bin/dnf /usr/bin/yum
+    ignore_errors: yes
+
+  - name: Change the kubeconfig IP to connect remote flannel.
+    command: |
+      sed -i 's|server: https://127.0.0.1:6443|server: https://192.168.23.11:6443|' /home/msevinc/.kube/config
+
+  - name: Install Kubeedge
+    command: /usr/local/bin/keadm init --advertise-address="192.168.23.11" --profile version=v1.12.1 --kube-config=/home/msevinc/.kube/config
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Pause for 45 seconds before the next task
+    pause:
+      seconds: 45
+
+  - name: Create token and write it to a file
+    command: /usr/local/bin/keadm gettoken --kube-config=/home/msevinc/.kube/config > /home/msevinc/kubeedge/token
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Apply devices_v1beta1_device.yaml CRD
+    command: kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/devices/devices_v1beta1_device.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Apply devices_v1beta1_devicemodel.yaml CRD
+    command: kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/devices/devices_v1beta1_devicemodel.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Apply cluster_objectsync_v1alpha1.yaml CRD
+    command: kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/reliablesyncs/cluster_objectsync_v1alpha1.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Apply objectsync_v1alpha1.yaml CRD
+    command: kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/reliablesyncs/objectsync_v1alpha1.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Apply router_v1_ruleEndpoint.yaml CRD
+    command: kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/router/router_v1_ruleEndpoint.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Apply router_v1_rule.yaml CRD
+    command: kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/router/router_v1_rule.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Apply apps_v1alpha1_edgeapplication.yaml CRD
+    command: kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/apps/apps_v1alpha1_edgeapplication.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Apply apps_v1alpha1_nodegroup.yaml CRD
+    command: kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/apps/apps_v1alpha1_nodegroup.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Apply operations_v1alpha1_nodeupgradejob.yaml CRD
+    command: kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/operations/operations_v1alpha1_nodeupgradejob.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Patch the cloudcore service with NodePort configuration
+    shell: >
+      kubectl patch service cloudcore -n kubeedge -p '{
+        "spec": {
+          "type": "NodePort",
+          "ports": [
+            {
+              "port": 10000,
+              "protocol": "TCP",
+              "targetPort": 10000,
+              "nodePort": 31733
+            },
+            {
+              "port": 10001,
+              "protocol": "UDP",
+              "targetPort": 10001,
+              "nodePort": 32099
+            },
+            {
+              "port": 10002,
+              "protocol": "TCP",
+              "targetPort": 10002,
+              "nodePort": 31508
+            },
+            {
+              "port": 10003,
+              "protocol": "TCP",
+              "targetPort": 10003,
+              "nodePort": 31680
+            },
+            {
+              "port": 10004,
+              "protocol": "TCP",
+              "targetPort": 10004,
+              "nodePort": 30979
+            }
+          ]
+        }
+      }'
+
+  - name: Pause for 45 seconds before the next task
+    pause:
+      seconds: 45
+
+  - name: Delete current flannel
+    command: kubectl delete daemonsets.apps -n kube-system kube-flannel-ds-arm64
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+  - name: Get edited flannel daemonset
+    shell: wget https://raw.githubusercontent.com/mehmetihsansevinc/decice/refs/heads/main/flannel-edge-access.yaml -P /home/msevinc/kubeedge/
+
+  - name: Pause for 45 seconds before the next task
+    pause:
+      seconds: 45
+
+  - name: Apply new flannel daemonset
+    command: kubectl apply -f /home/msevinc/kubeedge/flannel-edge-access.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
